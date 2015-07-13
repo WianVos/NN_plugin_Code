@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+
+    THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS
+    FOR A PARTICULAR PURPOSE. THIS CODE AND INFORMATION ARE NOT SUPPORTED BY XEBIALABS.
+
+-->
+<synthetic xsi:schemaLocation="http://www.xebialabs.com/deployit/synthetic synthetic.xsd" xmlns="http://www.xebialabs.com/deployit/synthetic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    
+    <type type="xldeploy.Task" extends="xlrelease.PythonScript" virtual="true">
+        <property name="iconLocation" default="xldeploy/xldeploy-icon-black-small.png" hidden="true" />
+        <property name="taskColor" hidden="true" default="#68B749" />
+
+        <property name="xldeployServer" category="input" label="Server" referenced-type="xldeploy.Server" kind="ci"/>
+        <property name="username" category="input" label="username" required="true" />
+        <property name="password" password="true" category="input" required="true" />
+
+        <property name="continueIfStepFails" category="input" kind="boolean" />
+        <property name="numberOfContinueRetrials" category="input" kind="integer" />
+        <property name="pollingInterval" category="input" label="Polling Interval" default="10" required="true" kind="integer" description="Polling interval in seconds to check task status."/>
+        <property name="numberOfPollingTrials" category="input" label="Polling Retry Count" required="true" kind="integer" description="Number of times to retry check for task status."/>
+    </type>
+
+    <type type="xldeploy.DeployTask" extends="xldeploy.Task" description="Execute a deploy task on XLD">
+        <property name="scriptLocation" default="xldeploy/deployTask.py" hidden="true" />
+        
+        <property name="deploymentPackage" category="input" label="Deployment Package" required="true" />
+        <property name="environment" category="input" label="Environment" default="" required="true" />
+        <property name="orchestrators" category="input" label="Orchestrators" default="" required="false" />
+        <property name="deployedApplicationProperties" category="input" default="" required="false" description="A dictionary with key value pairs" />
+        <property name="deployedProperties" category="input" default="" required="false" description="A dictionary with key value pairs" />
+        <property name="rollbackOnError" category="input" kind="boolean" />
+
+    </type>
+    
+    <type type="xldeploy.ControlTask" extends="xldeploy.Task" description="Execute a control task on XLD">
+        <property name="scriptLocation" default="xldeploy/controlTask.py" hidden="true" />
+
+        <property name="ciId" category="input" label="Configuration Item Id" required="true" />
+        <property name="controlTaskName" category="input" label="Control Task Name" default="" required="false" />
+        <property name="parameters" category="input" default="" required="false" description="A dictionary with key value pairs" />
+    </type>
+
+    <type type="lmxld.uploadApplicationPackageConfig" extends="xldeploy.Task">
+    	<property name="applicationId"	label="application id" category="input" required="true" kind="string" description="the application we are going to add a deployment package to" />
+    	<property name="applicationVersion" label="application version" category="input" required="true" kind="string" description="the identifier (usually buildnr) for the new deployment package"/>
+    	<property name="xmlConfigData" label="configuration Xml" default="${config_xml}" category="input" required="false" size="large" description="any xml we want to upload to the deployment package. The xml may contain placeholders for the version of the application package and the application Id itself" />
+    	<property name="versionPlaceholder" category="input" hidden="true" default="version_placeholder" kind="string" />
+    	<property name="applicationIdPlaceholder" category="input" hidden="true" default="application_placeholder" kind="string" />
+    	<property name="scriptLocation" default="xldeploy/uploadApplicationPackageConfig.py" hidden="true" />
+    </type>
+
+    <type type="xldeploy.Server" extends="configuration.HttpConnection"/>
+
+    <type type="lm.ConfigFsServer" extends="xlrelease.Configuration">
+        <property name="serverName" label="Name" kind="string" description="Unique name describing this executors Server" />
+        <property name="host" label="host" kind="string" />
+        <property name="username" label="Username" kind="string" />
+        <property name="password" label="Password" kind="string" password="true" />
+    </type>
+
+    <type type="lmxld.getApplicationPackageConfigFs" extends="xlrelease.PythonScript">
+        <property name="taskColor" hidden="true" default="#68B768" />
+        <property name="configFsServer" category="input" label="config Filesystem Server" referenced-type="lm.ConfigFsServer" kind="ci" />
+        <property name="scriptLocation" default="lm/getApplicationPackageConfigFs.py" hidden="true" />
+        <property name="remotePathOnFs" label="remote path on filesystem" category="input" required="true" />
+        <property name="config_xml" category="output" />
+    </type>
+
+    <type type="lmxld.addApplicationPackageConfigFs" extends="xlrelease.PythonScript">
+        <property name="taskColor" hidden="true" default="#68B768" />
+        <property name="configFsServer" category="input" label="config Filesystem Server" referenced-type="lm.ConfigFsServer" kind="ci" />
+        <property name="scriptLocation" default="lm/addApplicationPackageConfigFs.py" hidden="true" />
+        <property name="remotePathOnFs" label="remote path on filesystem" category="input" required="true" />
+        <property name="current_config_xml" category="input"  />
+        <property name="overwrite_current" category="input" kind="boolean" required="false" default="false" /> 
+        <property name="config_xml" category="output" />
+    </type>
+
+ 
+<!-- RTC integration stuff -->
+
+    <type type="lm.RTCClientServer" extends="xlrelease.Configuration">
+        <property name="serverName" label="Name" kind="string" description="Unique name describing this RTC Client Server" />
+        <property name="host" label="host" kind="string" />
+        <property name="username" label="Username" kind="string" />
+        <property name="password" label="Password" kind="string" password="true" />
+        <property name="filesystemLocation" label="Filesystem Workspace Base" kind="string" />
+        <property name="pathToClientSoftware" label="Path to the RTC Client software" kind="string" required="true"  />
+    </type>
+     
+    <type type="lm.RTCConfigRepo" extends="xlrelease.Configuration">
+        <property name="serverName" label="Name" kind="string" description="Unique name describing this RTC Client Server" />
+        <property name="host" label="host" kind="string" />
+        <property name="username" label="Username" kind="string" />
+        <property name="password" label="Password" kind="string" password="true" />
+        <property name="RTC_REPO" label="RTC repository url" category="input" kind="string" hidden="false" />
+        <property name="WORKSPACE" label="RTC workspace name" category="input" kind="string" hidden="false" />
+        <property name="STREAM" label="RTC stream name" category="input" kind="string" hidden="false" />
+        <property name="COMPONENT" label="RTC component name" category="input" kind="string" hidden="false" />
+        <property name="WORKITEM"  label="RTC workitem nr" category="input" kind="string" hidden="false" />
+    </type>
+     
+    <type type="lmxld.getConfigXmlFromRTC" extends="xlrelease.PythonScript">
+        <property name="taskColor" hidden="true" default="#68B768" />
+        <property name="configRTCServer" category="input" label="Target RTC Client Server" referenced-type="lm.RTCClientServer" kind="ci" />
+        <property name="configRTCRepo" category="input" label="Target RTC Repo" referenced-type="lm.RTCConfigRepo" kind="ci" />
+        <property name="scriptLocation" default="lm/getApplicationPackageConfigRTC.py" hidden="true" />
+        <property name="config_xml" category="output" />
+    </type>
+
+<!-- Dar Builder -->
+     <type type="lm.DarBuildServer" extends="xlrelease.Configuration">
+        <property name="serverName" label="Name" kind="string" description="Unique name describing this RTC Client Server" />
+        <property name="host" label="host" kind="string" />
+        <property name="username" label="Username" kind="string" />
+        <property name="password" label="Password" kind="string" password="true" />
+        <property name="workingDirectory" label="Filesystem Workspace" kind="string" />
+        <property name="pathToZipExecutable" label="path to the Zip binary" kind="string" default="/usr/bin/zip" hidden="true"/>
+    </type>
+    
+    <type type="lm.addEarFromArtifactory" description="download an earfile from artifactory and add it to a Dar package" extends="xlrelease.PythonScript">
+        <property name="taskColor" hidden="true" default="#7A1F99" />
+        <property name="darBuildServer" category="input" label="Dar BuildServer to use" referenced-type="lm.DarBuildServer" kind="ci" /> 
+        <property name="appName" category="input" label="Application Name" kind="string" required="true"/> 	
+        <property name="appVersion" category="input" label="Application Version" kind="string" required="true"/> 	
+        <property name="deployableName" category="input" label="Deployable Name" kind="string" required="true"/>
+        <property name="deployableType" category="input" label="Deployable Type" kind="string" required="true"/> 	
+        <property name="deployableUrl" category="input" label="Url to download the Deployable from" kind="string" required="true"/> 	
+        <property name="deployableXml" category="input" size="large" label="Deployable Type Aditional XML" kind="string" required="false"/> 	
+        <property name="scriptLocation" default="lmDarBuilder/addEarFromArtifactory.py" hidden="true" />
+    </type>
+
+    <type type="lm.createDarPackage" description="create an initial Dar package on the Dar Buildserver" extends="xlrelease.PythonScript">
+        <property name="taskColor" hidden="true" default="#7A1F99" />
+        <property name="darBuildServer" category="input" label="Dar BuildServer to use" referenced-type="lm.DarBuildServer" kind="ci" /> 
+        <property name="appName" category="input" label="Application Name" kind="string" required="true"/> 	
+        <property name="appVersion" category="input" label="Application Version" kind="string" required="true"/> 	
+        <property name="scriptLocation" default="lmDarBuilder/createDarPackage.py" hidden="true" />
+    </type>
+  
+    <type type="lm.uploadDarPackage" description="upload a dar package to and xlDeploy server" extends="lm.createDarPackage">
+        <property name="scriptLocation" default="lmDarBuilder/uploadDarPackage.py" hidden="true" />
+        <property name="xldeployServer" category="input" label="xldeploy server" referenced-type="xldeploy.Server" kind="ci"/>
+    </type>
+  
+</synthetic>
+
+
